@@ -1,0 +1,4 @@
+<launch>
+    <rosparam command="load" ns="move_group" file="$(find moveit_tutorials)/doc/ompl_constrained_planning/config/ompl_planning.yaml"/>
+    <!-- <node pkg="moveit_tutorials" type="ompl_constrained_planning" name="ompl_constrained_planning" output="screen"/> -->
+</launch>
