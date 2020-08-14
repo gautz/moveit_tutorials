@@ -58,6 +58,8 @@ int main(int argc, char** argv)
   ros::AsyncSpinner spinner(1);
   spinner.start();
 
+  // BEGIN_TUTORIAL
+  //
   // Setup
   // ^^^^^
 
@@ -80,12 +82,8 @@ int main(int argc, char** argv)
   visual_tools.publishText(text_pose, "MoveGroupInterface Demo", rvt::WHITE, rvt::XLARGE);
   visual_tools.trigger();
 
-//   node_handle.setParam("/move_group/panda_arm/enforce_joint_model_state_space", true);
-//   node_handle.setParam("/move_group/panda_arm/use_ompl_constraint_state_space", true);
-
   // Start the demo
   // ^^^^^^^^^^^^^^^^^^^^^^^^^
-  // visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
 
   // Adding/Removing Objects and Attaching/Detaching Objects
   // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -123,12 +121,6 @@ int main(int argc, char** argv)
   ROS_INFO_NAMED("tutorial", "Add an object into the world");
   planning_scene_interface.addCollisionObjects(collision_objects);
 
-  // Show text in RViz of status
-  visual_tools.publishText(text_pose, "Add object", rvt::WHITE, rvt::XLARGE);
-  visual_tools.trigger();
-
-  // visual_tools.prompt("next step");
-
   // Planning to a Pose goal
   // ^^^^^^^^^^^^^^^^^^^^^^^
   tf2::Quaternion ee_orientation;
@@ -147,6 +139,9 @@ int main(int argc, char** argv)
   target_pose1.position.y = -0.2;
   target_pose1.position.z = 0.3;
   move_group.setPoseTarget(target_pose1);
+
+  visual_tools.publishAxisLabeled(start_pose1, "start");
+  visual_tools.publishAxisLabeled(target_pose1, "goal");
 
   // Planning with Path Constraints
   // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -197,32 +192,19 @@ int main(int argc, char** argv)
   // Lets increase the planning time from the default 5 seconds to be sure the planner has enough time to succeed.
   move_group.setPlanningTime(20.0);
 
+  ROS_INFO_NAMED("tutorial", "Start with path planning...");
   moveit::planning_interface::MoveGroupInterface::Plan my_plan;
   bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-  ROS_INFO_NAMED("tutorial", "Visualizing plan 3 (constraints) %s", success ? "" : "FAILED");
+  ROS_INFO_NAMED("tutorial", "Planning finished: %s", success ? "" : "FAILED");
 
   // Visualize the plan in RViz
   // visual_tools.deleteAllMarkers();
-  visual_tools.publishAxisLabeled(start_pose1, "start");
-  visual_tools.publishAxisLabeled(target_pose1, "goal");
   visual_tools.publishText(text_pose, "Constrained Goal", rvt::WHITE, rvt::XLARGE);
   visual_tools.publishTrajectoryLine(my_plan.trajectory_, joint_model_group);
   visual_tools.trigger();
 
-  // visual_tools.prompt("next step");
-
   // When done with the path constraint be sure to clear it.
   move_group.clearPathConstraints();
-
-  // // Now, let's remove the collision object from the world.
-  // ROS_INFO_NAMED("tutorial", "Remove the object from the world");
-  // std::vector<std::string> object_ids;
-  // object_ids.push_back(collision_object.id);
-  // planning_scene_interface.removeCollisionObjects(object_ids);
-
-  // // Show text in RViz of status
-  // visual_tools.publishText(text_pose, "Object removed", rvt::WHITE, rvt::XLARGE);
-  // visual_tools.trigger();
 
   // END_TUTORIAL
 

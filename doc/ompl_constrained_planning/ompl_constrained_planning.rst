@@ -7,3 +7,5 @@ The tutorial on the `Move Group Interface <../move_group_interface_tutorial/move
 
 TODO create video.
 
+.. tutorial-formatter:: ./src/ompl_constrained_planning.cpp
+
