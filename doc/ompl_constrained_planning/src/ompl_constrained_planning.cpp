@@ -51,12 +51,16 @@
 
 #include <ros/param.h>
 
+constexpr char LOGNAME[]{ "tutorial" };
+
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "move_group_interface_tutorial");
   ros::NodeHandle node_handle;
   ros::AsyncSpinner spinner(1);
   spinner.start();
+
+  const std::string path_constraint_type{ "orientation" };
 
   // BEGIN_TUTORIAL
   //
@@ -82,20 +86,19 @@ int main(int argc, char** argv)
   visual_tools.publishText(text_pose, "MoveGroupInterface Demo", rvt::WHITE, rvt::XLARGE);
   visual_tools.trigger();
 
-  // Start the demo
-  // ^^^^^^^^^^^^^^^^^^^^^^^^^
-
-  // Adding/Removing Objects and Attaching/Detaching Objects
+  // Creating the planning problem
   // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   //
-  // Define a collision object ROS message.
+  // The content of this section is mainly based on Move Group C++ interface tutorial and will not be discussed in
+  // detail here.
+
+  // Obstacle
+  // ********
+  // Add an obstacle the robot will have to move around
   moveit_msgs::CollisionObject collision_object;
   collision_object.header.frame_id = move_group.getPlanningFrame();
-
-  // The id of the object is used to identify it.
   collision_object.id = "box1";
 
-  // Define a box to add to the world.
   shape_msgs::SolidPrimitive primitive;
   primitive.type = primitive.BOX;
   primitive.dimensions.resize(3);
@@ -103,7 +106,6 @@ int main(int argc, char** argv)
   primitive.dimensions[1] = 0.1;
   primitive.dimensions[2] = 0.4;
 
-  // Define a pose for the box (specified relative to frame_id)
   geometry_msgs::Pose box_pose;
   box_pose.orientation.w = 1.0;
   box_pose.position.x = 0.4;
@@ -113,7 +115,6 @@ int main(int argc, char** argv)
   collision_object.primitives.push_back(primitive);
   collision_object.primitive_poses.push_back(box_pose);
   collision_object.operation = collision_object.ADD;
-
   std::vector<moveit_msgs::CollisionObject> collision_objects;
   collision_objects.push_back(collision_object);
 
@@ -121,8 +122,9 @@ int main(int argc, char** argv)
   ROS_INFO_NAMED("tutorial", "Add an object into the world");
   planning_scene_interface.addCollisionObjects(collision_objects);
 
-  // Planning to a Pose goal
-  // ^^^^^^^^^^^^^^^^^^^^^^^
+  // Start and goal
+  // **************
+  // Create a start state and pose goal and visualize them with in Rviz.
   tf2::Quaternion ee_orientation;
   ee_orientation.setRPY(0, M_PI, 0);
   geometry_msgs::Quaternion orientation = tf2::toMsg(ee_orientation);
@@ -132,6 +134,10 @@ int main(int argc, char** argv)
   start_pose1.position.x = 0.3;
   start_pose1.position.y = 0.2;
   start_pose1.position.z = 0.3;
+
+  moveit::core::RobotState start_state(*move_group.getCurrentState());
+  start_state.setFromIK(joint_model_group, start_pose1);
+  move_group.setStartState(start_state);
 
   geometry_msgs::Pose target_pose1;
   target_pose1.orientation = orientation;
@@ -143,14 +149,17 @@ int main(int argc, char** argv)
   visual_tools.publishAxisLabeled(start_pose1, "start");
   visual_tools.publishAxisLabeled(target_pose1, "goal");
 
-  // Planning with Path Constraints
-  // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  // Create and add path constraints
+  // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   //
-  // Path constraints can easily be specified for a link on the robot.
-  // Let's specify a path constraint and a pose goal for our group.
-  // First define the path constraint.
+  // Path constraints can easily be specified for a link on the robot. Let's specify a path constraint and a pose goal
+  // for our group. We choose between position constraints or position constraints, depending on a user supplied command
+  // line argument
+  moveit_msgs::Constraints path_constraints;
+  // if (path_constraint_type == "orientation")
+  // {
   moveit_msgs::OrientationConstraint ocm;
-  ocm.link_name = "panda_link7";
+  ocm.link_name = "panda_link8";
   ocm.header.frame_id = "panda_link0";
   ocm.orientation = orientation;
   ocm.absolute_x_axis_tolerance = 0.1;
@@ -158,44 +167,41 @@ int main(int argc, char** argv)
   ocm.absolute_z_axis_tolerance = M_PI;
   ocm.weight = 1.0;
 
-  moveit_msgs::PositionConstraint pcm;
-  pcm.link_name = "panda_link7";
-  pcm.header.frame_id = "panda_link0";
-  shape_msgs::SolidPrimitive cbox;
-  cbox.type = cbox.BOX;
-  cbox.dimensions = { 0.1, 0.5, 0.5 };
-  pcm.constraint_region.primitives.push_back(cbox);
-  auto cbox_pose = geometry_msgs::Pose(target_pose1);
-  cbox_pose.position.y = 0.0;
-  cbox_pose.position.z = 0.4;
-  pcm.constraint_region.primitive_poses.push_back(cbox_pose);
+  path_constraints.orientation_constraints.push_back(ocm);
+  // }
+  // else if (path_constraint_type == "position")
+  // {
+  //   moveit_msgs::PositionConstraint pcm;
+  //   pcm.link_name = "panda_link8";
+  //   pcm.header.frame_id = "panda_link0";
+  //   shape_msgs::SolidPrimitive cbox;
+  //   cbox.type = cbox.BOX;
+  //   cbox.dimensions = { 0.1, 0.5, 0.5 };
+  //   pcm.constraint_region.primitives.push_back(cbox);
+  //   auto cbox_pose = geometry_msgs::Pose(target_pose1);
+  //   cbox_pose.position.x = 0.28;
+  //   cbox_pose.position.y = 0.0;
+  //   cbox_pose.position.z = 0.4;
+  //   pcm.constraint_region.primitive_poses.push_back(cbox_pose);
 
-  visual_tools.publishCuboid(cbox_pose, cbox.dimensions[0], cbox.dimensions[1], cbox.dimensions[2],
-                             rvt::TRANSLUCENT_DARK);
-  visual_tools.trigger();
+  //   path_constraints.position_constraints.push_back(pcm);
+  //   visual_tools.publishCuboid(cbox_pose, cbox.dimensions[0], cbox.dimensions[1], cbox.dimensions[2],
+  //                              rvt::TRANSLUCENT_DARK);
+  //   visual_tools.trigger();
+  // }
+  move_group.setPathConstraints(path_constraints);
 
-  // Now, set it as the path constraint for the group.
-  moveit_msgs::Constraints test_constraints;
-  // test_constraints.orientation_constraints.push_back(ocm);
-  test_constraints.position_constraints.push_back(pcm);
-  move_group.setPathConstraints(test_constraints);
+  // Solve the planning problem
+  // ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-  moveit::core::RobotState start_state(*move_group.getCurrentState());
-  start_state.setFromIK(joint_model_group, start_pose1);
-  move_group.setStartState(start_state);
+  // We can experiment with different settings, the planner below seems to work fine in this case.
+  move_group.setPlanningTime(5.0);
+  move_group.setPlannerId("PRM");
 
-  // Now we will plan to the earlier pose target from the new
-  // start state that we have just created.
-  move_group.setPoseTarget(target_pose1);
-
-  // Planning with constraints can be slow because every sample must call an inverse kinematics solver.
-  // Lets increase the planning time from the default 5 seconds to be sure the planner has enough time to succeed.
-  move_group.setPlanningTime(20.0);
-
-  ROS_INFO_NAMED("tutorial", "Start with path planning...");
+  ROS_INFO_NAMED(LOGNAME, "Start with path planning...");
   moveit::planning_interface::MoveGroupInterface::Plan my_plan;
   bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-  ROS_INFO_NAMED("tutorial", "Planning finished: %s", success ? "" : "FAILED");
+  ROS_INFO_NAMED(LOGNAME, "Planning finished: %s", success ? "" : "FAILED");
 
   // Visualize the plan in RViz
   // visual_tools.deleteAllMarkers();
