@@ -80,8 +80,8 @@ int main(int argc, char** argv)
   visual_tools.publishText(text_pose, "MoveGroupInterface Demo", rvt::WHITE, rvt::XLARGE);
   visual_tools.trigger();
 
-//   node_handle.setParam("/move_group/panda_arm/enforce_joint_model_state_space", true);
-//   node_handle.setParam("/move_group/panda_arm/use_ompl_constraint_state_space", true);
+  //   node_handle.setParam("/move_group/panda_arm/enforce_joint_model_state_space", true);
+  //   node_handle.setParam("/move_group/panda_arm/use_ompl_constraint_state_space", true);
 
   // Start the demo
   // ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -110,7 +110,7 @@ int main(int argc, char** argv)
   box_pose.orientation.w = 1.0;
   box_pose.position.x = 0.4;
   box_pose.position.y = 0.0;
-  box_pose.position.z = 0.3;
+  box_pose.position.z = 0.2;
 
   collision_object.primitives.push_back(primitive);
   collision_object.primitive_poses.push_back(box_pose);
@@ -154,8 +154,9 @@ int main(int argc, char** argv)
   // Path constraints can easily be specified for a link on the robot.
   // Let's specify a path constraint and a pose goal for our group.
   // First define the path constraint.
+
   moveit_msgs::OrientationConstraint ocm;
-  ocm.link_name = "panda_link7";
+  ocm.link_name = "panda_link8";
   ocm.header.frame_id = "panda_link0";
   ocm.orientation = orientation;
   ocm.absolute_x_axis_tolerance = 0.1;
@@ -163,26 +164,26 @@ int main(int argc, char** argv)
   ocm.absolute_z_axis_tolerance = M_PI;
   ocm.weight = 1.0;
 
-  moveit_msgs::PositionConstraint pcm;
-  pcm.link_name = "panda_link7";
-  pcm.header.frame_id = "panda_link0";
-  shape_msgs::SolidPrimitive cbox;
-  cbox.type = cbox.BOX;
-  cbox.dimensions = { 0.1, 0.5, 0.5 };
-  pcm.constraint_region.primitives.push_back(cbox);
-  auto cbox_pose = geometry_msgs::Pose(target_pose1);
-  cbox_pose.position.y = 0.0;
-  cbox_pose.position.z = 0.4;
-  pcm.constraint_region.primitive_poses.push_back(cbox_pose);
+  // moveit_msgs::PositionConstraint pcm;
+  // pcm.link_name = "panda_link8";
+  // pcm.header.frame_id = "panda_link0";
+  // shape_msgs::SolidPrimitive cbox;
+  // cbox.type = cbox.BOX;
+  // cbox.dimensions = { 0.1, 0.5, 0.5 };
+  // pcm.constraint_region.primitives.push_back(cbox);
+  // auto cbox_pose = geometry_msgs::Pose(target_pose1);
+  // cbox_pose.position.y = 0.0;
+  // cbox_pose.position.z = 0.4;
+  // pcm.constraint_region.primitive_poses.push_back(cbox_pose);
 
-  visual_tools.publishCuboid(cbox_pose, cbox.dimensions[0], cbox.dimensions[1], cbox.dimensions[2],
-                             rvt::TRANSLUCENT_DARK);
-  visual_tools.trigger();
+  // visual_tools.publishCuboid(cbox_pose, cbox.dimensions[0], cbox.dimensions[1], cbox.dimensions[2],
+  //                            rvt::TRANSLUCENT_DARK);
+  // visual_tools.trigger();
 
   // Now, set it as the path constraint for the group.
   moveit_msgs::Constraints test_constraints;
-  // test_constraints.orientation_constraints.push_back(ocm);
-  test_constraints.position_constraints.push_back(pcm);
+  test_constraints.orientation_constraints.push_back(ocm);
+  // test_constraints.position_constraints.push_back(pcm);
   move_group.setPathConstraints(test_constraints);
 
   moveit::core::RobotState start_state(*move_group.getCurrentState());
@@ -195,7 +196,7 @@ int main(int argc, char** argv)
 
   // Planning with constraints can be slow because every sample must call an inverse kinematics solver.
   // Lets increase the planning time from the default 5 seconds to be sure the planner has enough time to succeed.
-  move_group.setPlanningTime(20.0);
+  move_group.setPlanningTime(5.0);
 
   moveit::planning_interface::MoveGroupInterface::Plan my_plan;
   bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
