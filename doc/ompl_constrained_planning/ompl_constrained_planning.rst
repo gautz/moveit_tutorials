@@ -16,6 +16,40 @@ The current implementation supports the following constraints:
 
 This planning approach provides an alternative solution when you where using the enforce_joint_model_state_space_ option for planning problems. More research is needed to determine when it is benificial to use this planner.
 
+Configuring OMPL to plan in a constrained state space
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OMPL reads configurations parameters from a file called :code:`ompl_planning.yaml`. This tutorial uses the Panda robot, for which this file can be found in :code:`panda_moveit_config/config/ompl_planning.yaml`. We will add a parameter to tell OMPL to plan in a constrained state space by setting :code:`use_ompl_constrained_state_space`. In addition, if the parameter `projection_evaluator`_ was not yet specified we also need to do this.
+
+.. code-block:: yaml
+
+   panda_arm:
+      use_ompl_constrained_state_space: true                                    
+      projection_evaluator: joints(panda_joint1,panda_joint2) 
+
+Run the tutorial
+^^^^^^^^^^^^^^^^
+
+Launch the move group node for the panda robot: ::
+
+   roslaunch panda_moveit_config demo.launch
+
+Then add a Marker display to Rviz:
+
+.. image:: rviz_add_marker_topic.png
+   :width: 300px
+
+Open a new terminal window to run the tutorial node: ::
+
+   rosrun moveit_tutorials ompl_constraint_planning_example.py
+
+Now a red and green sphere should appear in Rviz to show the start and goal states. Then, if planning succeeded, you should see a preview of the trajectory that was planned with orientation constraints. The following message appears in the terminal: ::
+
+   ============ Press enter to continue with the second planning problem.
+
+After pressing enter, a grey box should appear in Rviz that represents the orientation constraints on the link :code:`panda_link8` for the panda robot. An again, if planning succeeded, a the trajectory is animated in rviz.
+
+To see the progress of the planning, look in the terminal window where you launched the Panda's move group node.
+
 Planning with path constraints using the Python interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -26,3 +60,4 @@ Planning with path constraints using the Python interface
 .. _Move Group Interface: ../move_group_interface/move_group_interface_tutorial.html
 .. _shape_msgs/SolidPrimitive: http://docs.ros.org/latest/api/shape_msgs/html/msg/SolidPrimitive.html
 .. _enforce_joint_model_state_space: ../ompl_interface/ompl_interface_tutorial.html#enforce-planning-in-joint-space
+.. _projection_evaluator: ../ompl_interface/ompl_interface_tutorial.html#projection-evaluator
