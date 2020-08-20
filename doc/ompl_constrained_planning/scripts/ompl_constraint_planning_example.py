@@ -115,7 +115,7 @@ class ConstrainedPlanningTutorial(object):
 
         self.display_sphere(pose.pose, color=COLOR_RED)
 
-        pose.pose.position.y += 0.2
+        pose.pose.position.y += 0.3
         pose.pose.position.z -= 0.3
 
         self.display_sphere(pose.pose)
@@ -175,6 +175,34 @@ class ConstrainedPlanningTutorial(object):
         cbox_pose.position.y = 0.1
         cbox_pose.position.z = 0.45
         cbox_pose.orientation.w = 1.0
+        pcm.constraint_region.primitive_poses.append(cbox_pose)
+
+        # display the constraints in rviz
+        self.display_box(cbox_pose, cbox.dimensions)
+
+        return pcm
+
+    def create_position_constraints_3(self):
+        pcm = moveit_msgs.msg.PositionConstraint()
+        pcm.header.frame_id = self.ref_link
+        pcm.link_name = self.ee_link
+
+        cbox = shape_msgs.msg.SolidPrimitive()
+        cbox.type = shape_msgs.msg.SolidPrimitive.BOX
+        cbox.dimensions = [0.005, 0.005, 2.0]
+        pcm.constraint_region.primitives.append(cbox)
+
+        current_pose = self.move_group.get_current_pose()
+
+        cbox_pose = geometry_msgs.msg.Pose()
+        cbox_pose.position.x = current_pose.pose.position.x
+        cbox_pose.position.y = current_pose.pose.position.y
+        cbox_pose.position.z = current_pose.pose.position.z
+        quat = quaternion_from_euler(pi/4, 0, 0)
+        cbox_pose.orientation.x = quat[0]
+        cbox_pose.orientation.y = quat[1]
+        cbox_pose.orientation.z = quat[2]
+        cbox_pose.orientation.w = quat[3]
         pcm.constraint_region.primitive_poses.append(cbox_pose)
 
         # display the constraints in rviz
@@ -316,7 +344,7 @@ def run_tutorial():
     print("============ Press enter to continue with the second planning problem.")
     input()
 
-    pcm = tutorial.create_position_constraints()
+    pcm = tutorial.create_position_constraints_3()
 
     path_constraints = moveit_msgs.msg.Constraints()
     path_constraints.orientation_constraints = []
