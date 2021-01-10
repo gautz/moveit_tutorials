@@ -67,6 +67,7 @@ Configuration
    doc/fake_controller_manager/fake_controller_manager_tutorial
    doc/custom_constraint_samplers/custom_constraint_samplers_tutorial
    doc/ompl_interface/ompl_interface_tutorial
+   doc/ompl_constrained_planning/ompl_constrained_planning
    doc/chomp_planner/chomp_planner_tutorial
    doc/stomp_planner/stomp_planner_tutorial
    doc/planning_adapters/planning_adapters_tutorial.rst
