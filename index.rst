@@ -47,12 +47,14 @@ Building more complex applications with MoveIt often requires developers to dig 
    doc/pick_place/pick_place_tutorial
    doc/moveit_grasps/moveit_grasps_tutorial
    doc/moveit_task_constructor/moveit_task_constructor_tutorial
+   doc/moveit_deep_grasps/moveit_deep_grasps_tutorial
    doc/subframes/subframes_tutorial
    doc/moveit_cpp/moveitcpp_tutorial
+   doc/bullet_collision_checker/bullet_collision_checker
 
 Integration with a New Robot
 ----------------------------
-Before attempting to integrate a new robot with MoveIt, check whether your robot has already been setup (see the `list of robots running MoveIt <http://moveit.ros.org/robots/>`_). Otherwise, follow the tutorials in this section to integrate your robot with MoveIt (and share your results on the MoveIt mailing list)
+Before attempting to integrate a new robot with MoveIt, check whether your robot has already been setup (see the `list of robots running MoveIt <http://moveit.ros.org/robots/>`_). Otherwise, follow the tutorials in this section to integrate your robot with MoveIt (and share your results on the MoveIt Discourse Channel)
 
 .. toctree::
    :maxdepth: 1
@@ -61,8 +63,10 @@ Before attempting to integrate a new robot with MoveIt, check whether your robot
    doc/urdf_srdf/urdf_srdf_tutorial
    doc/controller_configuration/controller_configuration_tutorial
    doc/perception_pipeline/perception_pipeline_tutorial
+   doc/hand_eye_calibration/hand_eye_calibration_tutorial
    doc/ikfast/ikfast_tutorial
    doc/trac_ik/trac_ik_tutorial
+   doc/opw_kinematics/opw_kinematics_tutorial
 
 Configuration
 -------------
@@ -75,6 +79,7 @@ Configuration
    doc/chomp_planner/chomp_planner_tutorial
    doc/stomp_planner/stomp_planner_tutorial
    doc/trajopt_planner/trajopt_planner_tutorial
+   doc/pilz_industrial_motion_planner/pilz_industrial_motion_planner
    doc/planning_adapters/planning_adapters_tutorial.rst
 
 Miscellaneous
@@ -83,8 +88,9 @@ Miscellaneous
 .. toctree::
    :maxdepth: 1
 
+   doc/gazebo_simulation/gazebo_simulation.rst
    doc/joystick_control_teleoperation/joystick_control_teleoperation_tutorial
-   doc/arm_jogging/arm_jogging_tutorial
+   doc/realtime_servo/realtime_servo_tutorial
    doc/benchmarking/benchmarking_tutorial
    doc/tests/tests_tutorial
    doc/ompl_constrained_planning/ompl_constrained_planning

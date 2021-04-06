@@ -1,6 +1,8 @@
 # MoveIt Tutorials
 
-[https://ros-planning.github.io/moveit_tutorials/](https://ros-planning.github.io/moveit_tutorials/)
+[MoveIt 1 Live tutorials](https://ros-planning.github.io/moveit_tutorials/)
+
+*These are the tutorials for MoveIt 1, for MoveIt 2 see [MoveIt 2 Tutorials](https://github.com/ros-planning/moveit2_tutorials/)*
 
 This is the primary documentation for the MoveIt project. We strongly encourage you to help improve MoveIt's documentation. Please consider reading the guidelines below for writing the best documentation and tutorials. However, if you are uncomfortable with any of the approaches, simply adding documentation text to your pull requests is better than nothing.
 
@@ -22,11 +24,12 @@ This repository is currently built automatically by two systems. Travis builds t
 
 ## Build Locally
 
-If you want to test the tutorials by generating the html pages locally on your machine, use the ``build_locally`` script.
-It has been tested on Ubuntu 16.04 with ROS Kinetic pre-installed. Run in the root of the moveit_tutorials package:
+If you want to test the tutorials by generating the html pages locally on your machine, you can use the ``build_locally`` script.
+Run in the root of the moveit_tutorials package:
 
     export ROS_DISTRO=kinetic # 16.04
     export ROS_DISTRO=melodic # 18.04
+    export ROS_DISTRO=noetic  # 20.04
 
     source /opt/ros/$ROS_DISTRO/setup.bash
     ./build_locally.sh
@@ -91,3 +94,44 @@ moveit_tutorials/doc/
         ├── <tutorial_name>_tutorial_test.py            # Python tests for tutorial
         └── <tutorial_name>_tutorial_test.cpp           # C++ tests for tutorial
 ```
+
+### Including Images and Videos
+#### Images
+The standard way to include an image in reStructuredText is
+```
+.. image:: filename.png
+   :width: 700px
+```
+
+This assumes that `filename.png` is in the same folder as the source `.rst` file. Images linked in this way will automatically be copied to the appropriate folder in the build.
+
+[External Documentation](https://sublime-and-sphinx-guide.readthedocs.io/en/latest/images.html)
+
+Do **not** include animated gifs as the file format leads to very large files. Use a video format like `webm` and see the section on local video below.
+
+#### YouTube and other External Video
+You can embed video with raw html, like in this example from the Pick and Place Tutorial.
+```
+.. raw:: html
+
+    <div style="position: relative; padding-bottom: 5%; height: 0; overflow: hidden; max-width: 100%; height: auto;">
+        <iframe width="700px" height="400px" src="https://www.youtube.com/embed/QBJPxx_63Bs?rel=0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
+```
+This includes [Youtube's suggested embed html](https://support.google.com/youtube/answer/171780?hl=en).
+
+#### Local Video
+To embed a video that is included in this repository, you also will use raw html, like this example from the Quickstart in RViz tutorial.
+
+```
+.. raw:: html
+
+    <video width="700px" nocontrols="true" autoplay="true" loop="true">
+        <source src="../../_static/rviz_joints_nullspace.webm" type="video/webm">
+        The joints moving while the end effector stays still
+    </video>
+```
+
+Note that the video file is in the `_static` folder instead of the same folder.
+
+[External Documentation on &lt;video&gt; tag](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video)

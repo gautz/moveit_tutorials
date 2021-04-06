@@ -1,3 +1,42 @@
+/*********************************************************************
+ * Software License Agreement (BSD License)
+ *
+ *  Copyright (c) 2019, PickNik, LLC.
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions
+ *  are met:
+ *
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.
+ *   * Neither the name of PickNik nor the names of its
+ *     contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *  POSSIBILITY OF SUCH DAMAGE.
+ *********************************************************************/
+
+/* Author: Omid Heidari
+   Desc: This file is a test for using trajopt in MoveIt. The goal is to make different types of constraints in
+   MotionPlanRequest and visualize the result calculated using the trajopt planner.
+*/
+
 #include <ros/ros.h>
 #include <ros/console.h>
 #include <moveit/planning_interface/planning_interface.h>
@@ -20,11 +59,6 @@
 #include <tf2/utils.h>
 #include <tf2_eigen/tf2_eigen.h>
 #include <tf2_ros/transform_listener.h>
-
-/* Author: Omid Heidari
-   Desc: This file is a test for using trajopt in MoveIt. The goal is to make different types of constraints in
-   MotionPlanRequest and visualize the result calculated using the trajopt planner.
-*/
 
 int main(int argc, char** argv)
 {
@@ -227,13 +261,12 @@ int main(int argc, char** argv)
   moveit_msgs::MotionPlanResponse response;
   res.getMessage(response);
 
-  for (int timestep_index = 0; timestep_index < response.trajectory.joint_trajectory.points.size(); ++timestep_index)
+  for (size_t timestep_index = 0; timestep_index < response.trajectory.joint_trajectory.points.size(); ++timestep_index)
   {
     std::stringstream joint_values_stream;
-    for (int joint_index = 0;
-         joint_index < response.trajectory.joint_trajectory.points[timestep_index].positions.size(); ++joint_index)
+    for (double position : response.trajectory.joint_trajectory.points[timestep_index].positions)
     {
-      joint_values_stream << response.trajectory.joint_trajectory.points[timestep_index].positions[joint_index] << " ";
+      joint_values_stream << position << " ";
     }
     ROS_DEBUG_STREAM_NAMED(NODE_NAME, "step: " << timestep_index << " joints positions: " << joint_values_stream.str());
   }
