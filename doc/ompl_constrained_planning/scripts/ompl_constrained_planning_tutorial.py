@@ -145,6 +145,48 @@ class ConstrainedPlanningTutorial(object):
 
     ## END_SUB_TUTORIAL
 
+    ## BEGIN_SUB_TUTORIAL ori_con
+    ## First we create simple box constraints on the current end-effector link (:code:`self.ee_link = "panda_link8"`).
+    def create_orientation_constraints(self):
+        ocm = moveit_msgs.msg.OrientationConstraint()
+        ocm.header.frame_id = self.ref_link
+        ocm.link_name = self.ee_link
+
+        current_pose = self.move_group.get_current_pose()
+        ocm.orientation = current_pose.pose.orientation
+
+        print("Quaternion desired: ",ocm.orientation)
+
+        # quat = quaternion_from_euler(pi / 4, 0, 0)
+        # ocm.orientation = quat
+        # ocm.orientation = Quaternion(0.5, 0.5, 0.5, 0.5)
+        # Allow rotation of 45 degrees around the x and y axis
+        ocm.absolute_x_axis_tolerance = pi #Allow max rotation of 45 degrees
+        ocm.absolute_y_axis_tolerance = pi #Allow max rotation of 360 degrees
+        ocm.absolute_z_axis_tolerance = pi #Allow max rotation of 45 degrees
+        
+        ocm.parameterization = moveit_msgs.msg.OrientationConstraint.ROTATION_VECTOR
+        # XYZ_EULER_ANGLES = 0
+        # ROTATION_VECTOR = 1
+        # The tilt constraint is the only constraint
+        ocm.weight = 1
+
+        # cbox = shape_msgs.msg.SolidPrimitive()
+        # cbox.type = shape_msgs.msg.SolidPrimitive.BOX
+        # cbox.dimensions = [0.1, 0.4, 0.4]
+
+        # cbox_pose = geometry_msgs.msg.Pose()
+        # cbox_pose.position.x = current_pose.pose.position.x
+        # cbox_pose.position.y = 0.15
+        # cbox_pose.position.z = 0.45
+        # cbox_pose.orientation.w = 1.0
+
+        # # display the constraints in rviz
+        # self.display_box(cbox_pose, cbox.dimensions)
+
+        return ocm
+    ## END_SUB_TUTORIAL
+
     ## BEGIN_SUB_TUTORIAL pos_con
     ## First we create simple box constraints on the current end-effector link (:code:`self.ee_link = "panda_link8"`).
     def create_simple_box_constraints(self):
@@ -298,9 +340,9 @@ class ConstrainedPlanningTutorial(object):
         box_pose = geometry_msgs.msg.PoseStamped()
         box_pose.header.frame_id = self.ref_link
         box_pose.pose.orientation.w = 1.0
-        box_pose.pose.position.x = 0.5
+        box_pose.pose.position.x = 0.6
         box_pose.pose.position.y = 0.0
-        box_pose.pose.position.z = 0.5
+        box_pose.pose.position.z = 0.6
         self.obstacle_name = "obstacle"
         self.scene.add_box(self.obstacle_name, box_pose, size=(0.2, 0.4, 0.1))
 
@@ -330,7 +372,8 @@ class ConstrainedPlanningTutorial(object):
             pose.pose.orientation.w,
         ]
         quat_rotate = quaternion_from_euler(-pi / 2, 0, 0)
-        quat_new = quaternion_multiply(quat_rotate, quat_ee)
+        # quat_new = quaternion_multiply(quat_rotate, quat_ee)
+        quat_new = quat_ee
 
         pose.pose.orientation.x = quat_new[0]
         pose.pose.orientation.y = quat_new[1]
@@ -377,6 +420,10 @@ def run_tutorial():
     # Copy move group variable for readability
     move_group = tutorial.move_group
 
+    # Now wait for the user (you) to press enter before doing trying the position constraints.
+    print("============ Press enter to start the box constrained planning problem.")
+    input()
+
     ## Create the first planning problem
     start_state = tutorial.create_start_state()
     pose_goal = tutorial.create_pose_goal()
@@ -403,7 +450,7 @@ def run_tutorial():
     move_group.clear_path_constraints()
 
     # Now wait for the user (you) to press enter before doing trying the position constraints.
-    print("============ Press enter to continue with the second planning problem.")
+    print("============ Press enter to continue with the plane constrained planning problem.")
     input()
     # remove all markers in Rviz before starting the next tutorial
     tutorial.remove_all_markers()
@@ -419,8 +466,10 @@ def run_tutorial():
     ## However, if we make it too small, the box will be thinner that the tolerance used by OMPL to evaluate constraints (:code:`1e-4` by default).
     ## MoveIt will use the stricter tolerance (the box width) to check the constraints, and many states will appear invalid.
     ## That's where the magic number :code:`0.0005` comes from, it is between :code:`0.00001` and :code:`0.001`.
-    pose_goal = tutorial.create_pose_goal_in_plane()
-    pcm = tutorial.create_plane_constraints()  # this function uses the 'magic' number
+    # pose_goal = tutorial.create_pose_goal_in_plane()
+    # pcm = tutorial.create_plane_constraints()  # this function uses the 'magic' number
+    pose_goal = tutorial.create_pose_goal_under_obstacle()
+    pcm = tutorial.create_vertical_plane_constraints()
 
     path_constraints = moveit_msgs.msg.Constraints()
     path_constraints.position_constraints.append(pcm)
@@ -434,7 +483,7 @@ def run_tutorial():
     move_group.plan()
     move_group.clear_path_constraints()
 
-    print("============ Press enter to continue with the second planning problem.")
+    print("============ Press enter to continue with the line constrained planning problem.")
     input()
     tutorial.remove_all_markers()
     ## Finally we can also plan along the line.
@@ -453,7 +502,75 @@ def run_tutorial():
     move_group.plan()
     move_group.clear_path_constraints()
 
-    print("Done!")
+    print("============ Press enter to continue with the plane constrained planning problem with obstacle.")
+    input()
+
+    tutorial.remove_all_markers()
+    tutorial.add_obstacle()
+
+    pose_goal = tutorial.create_pose_goal_under_obstacle()
+    pcm = tutorial.create_vertical_plane_constraints()
+
+    # We need two wrap the constraints in a generic `Constraints` message.
+    path_constraints = moveit_msgs.msg.Constraints()
+    path_constraints.position_constraints.append(pcm)
+    path_constraints.name = "use_equality_constraints"
+
+    move_group.set_start_state(start_state)
+    move_group.set_pose_target(pose_goal)
+    move_group.set_path_constraints(path_constraints)
+    move_group.set_planning_time(60)
+    move_group.plan()
+    move_group.clear_path_constraints()
+
+
+    print("============ Press enter to continue with the orientation constrained planning problem.")
+    input()
+    tutorial.remove_all_markers()
+    tutorial.remove_obstacle()
+
+    pose_goal = tutorial.create_pose_goal()
+
+    ocm = tutorial.create_orientation_constraints()
+
+    # path_constraints = moveit_msgs.msg.Constraints()
+    # path_constraints.orientation_constraints.append(ocm)
+    pose_goal = tutorial.create_pose_goal_under_obstacle()
+    pcm = tutorial.create_vertical_plane_constraints()
+
+    move_group.set_start_state(start_state)
+    move_group.set_pose_target(pose_goal)
+    move_group.set_path_constraints(path_constraints)
+    move_group.set_planning_time(30)
+    move_group.plan()
+    move_group.clear_path_constraints()
+
+    print("============ Press enter to continue with the orientation constrained planning problem with obstacle.")
+    input()
+
+    tutorial.remove_all_markers()
+    tutorial.add_obstacle()
+
+    pose_goal = tutorial.create_pose_goal_under_obstacle()
+    ocm = tutorial.create_orientation_constraints()
+
+    # We need two wrap the constraints in a generic `Constraints` message.
+    path_constraints = moveit_msgs.msg.Constraints()
+    path_constraints.orientation_constraints.append(ocm)
+
+    move_group.set_start_state(start_state)
+    move_group.set_pose_target(pose_goal)
+    move_group.set_path_constraints(path_constraints)
+    move_group.set_planning_time(60)
+    move_group.plan()
+    move_group.clear_path_constraints()
+
+
+    print("Press enter to exit!")
+    input()
+    tutorial.remove_all_markers()
+    tutorial.remove_obstacle()
+
     ## END_SUB_TUTORIAL
 
 
