@@ -161,10 +161,11 @@ class ConstrainedPlanningTutorial(object):
         # ocm.orientation = quat
         # ocm.orientation = Quaternion(0.5, 0.5, 0.5, 0.5)
         # Allow rotation of 45 degrees around the x and y axis
-        ocm.absolute_x_axis_tolerance = pi #Allow max rotation of 45 degrees
-        ocm.absolute_y_axis_tolerance = pi #Allow max rotation of 360 degrees
-        ocm.absolute_z_axis_tolerance = pi #Allow max rotation of 45 degrees
+        ocm.absolute_x_axis_tolerance = 1 # rotation "to the front"
+        ocm.absolute_y_axis_tolerance = 1 # rotation 
+        ocm.absolute_z_axis_tolerance = pi # rotation around vertical axis
         
+        # ocm.parameterization = moveit_msgs.msg.OrientationConstraint.XYZ_EULER_ANGLES
         ocm.parameterization = moveit_msgs.msg.OrientationConstraint.ROTATION_VECTOR
         # XYZ_EULER_ANGLES = 0
         # ROTATION_VECTOR = 1
@@ -419,13 +420,14 @@ def run_tutorial():
 
     # Copy move group variable for readability
     move_group = tutorial.move_group
+    ## Create the first planning problem
+    start_state = tutorial.create_start_state()
+    path_constraints = moveit_msgs.msg.Constraints()
 
     # Now wait for the user (you) to press enter before doing trying the position constraints.
     print("============ Press enter to start the box constrained planning problem.")
     input()
 
-    ## Create the first planning problem
-    start_state = tutorial.create_start_state()
     pose_goal = tutorial.create_pose_goal()
 
     # Let's try the simple box constraints first!
@@ -447,6 +449,25 @@ def run_tutorial():
     move_group.plan()
 
     # Clear the path constraints for our next experiment
+    move_group.clear_path_constraints()
+
+    print("============ Press enter to continue with the line constrained planning problem.")
+    input()
+    tutorial.remove_all_markers()
+    ## Finally we can also plan along the line.
+    pose_goal = tutorial.create_pose_goal()
+
+    pcm = tutorial.create_line_constraints()
+
+    path_constraints = moveit_msgs.msg.Constraints()
+    path_constraints.position_constraints.append(pcm)
+
+    path_constraints.name = "use_equality_constraints"
+
+    move_group.set_start_state(start_state)
+    move_group.set_pose_target(pose_goal)
+    move_group.set_path_constraints(path_constraints)
+    move_group.plan()
     move_group.clear_path_constraints()
 
     # Now wait for the user (you) to press enter before doing trying the position constraints.
@@ -483,25 +504,6 @@ def run_tutorial():
     move_group.plan()
     move_group.clear_path_constraints()
 
-    print("============ Press enter to continue with the line constrained planning problem.")
-    input()
-    tutorial.remove_all_markers()
-    ## Finally we can also plan along the line.
-    pose_goal = tutorial.create_pose_goal()
-
-    pcm = tutorial.create_line_constraints()
-
-    path_constraints = moveit_msgs.msg.Constraints()
-    path_constraints.position_constraints.append(pcm)
-
-    path_constraints.name = "use_equality_constraints"
-
-    move_group.set_start_state(start_state)
-    move_group.set_pose_target(pose_goal)
-    move_group.set_path_constraints(path_constraints)
-    move_group.plan()
-    move_group.clear_path_constraints()
-
     print("============ Press enter to continue with the plane constrained planning problem with obstacle.")
     input()
 
@@ -523,7 +525,6 @@ def run_tutorial():
     move_group.plan()
     move_group.clear_path_constraints()
 
-
     print("============ Press enter to continue with the orientation constrained planning problem.")
     input()
     tutorial.remove_all_markers()
@@ -533,15 +534,15 @@ def run_tutorial():
 
     ocm = tutorial.create_orientation_constraints()
 
-    # path_constraints = moveit_msgs.msg.Constraints()
-    # path_constraints.orientation_constraints.append(ocm)
+    path_constraints = moveit_msgs.msg.Constraints()
+    path_constraints.orientation_constraints.append(ocm)
     pose_goal = tutorial.create_pose_goal_under_obstacle()
-    pcm = tutorial.create_vertical_plane_constraints()
+    # pcm = tutorial.create_vertical_plane_constraints()
 
     move_group.set_start_state(start_state)
     move_group.set_pose_target(pose_goal)
     move_group.set_path_constraints(path_constraints)
-    move_group.set_planning_time(30)
+    # move_group.set_planning_time(30)
     move_group.plan()
     move_group.clear_path_constraints()
 
@@ -561,7 +562,7 @@ def run_tutorial():
     move_group.set_start_state(start_state)
     move_group.set_pose_target(pose_goal)
     move_group.set_path_constraints(path_constraints)
-    move_group.set_planning_time(60)
+    move_group.set_planning_time(30)
     move_group.plan()
     move_group.clear_path_constraints()
 
