@@ -443,6 +443,7 @@ def run_tutorial():
 
     # Don't forget the path constraints! That's the whole point of this tutorial.
     move_group.set_path_constraints(path_constraints)
+    move_group.set_planning_time(5)
 
     # And let the planner find a solution.
     # The move_group node should automatically visualize the solution in Rviz if a path is found.
@@ -467,6 +468,7 @@ def run_tutorial():
     move_group.set_start_state(start_state)
     move_group.set_pose_target(pose_goal)
     move_group.set_path_constraints(path_constraints)
+    move_group.set_planning_time(1)
     move_group.plan()
     move_group.clear_path_constraints()
 
@@ -501,6 +503,7 @@ def run_tutorial():
     move_group.set_start_state(start_state)
     move_group.set_pose_target(pose_goal)
     move_group.set_path_constraints(path_constraints)
+    move_group.set_planning_time(1)
     move_group.plan()
     move_group.clear_path_constraints()
 
@@ -521,7 +524,7 @@ def run_tutorial():
     move_group.set_start_state(start_state)
     move_group.set_pose_target(pose_goal)
     move_group.set_path_constraints(path_constraints)
-    move_group.set_planning_time(60)
+    move_group.set_planning_time(15)
     move_group.plan()
     move_group.clear_path_constraints()
 
@@ -542,7 +545,7 @@ def run_tutorial():
     move_group.set_start_state(start_state)
     move_group.set_pose_target(pose_goal)
     move_group.set_path_constraints(path_constraints)
-    # move_group.set_planning_time(30)
+    move_group.set_planning_time(1)
     move_group.plan()
     move_group.clear_path_constraints()
 
@@ -562,10 +565,51 @@ def run_tutorial():
     move_group.set_start_state(start_state)
     move_group.set_pose_target(pose_goal)
     move_group.set_path_constraints(path_constraints)
-    move_group.set_planning_time(30)
+    move_group.set_planning_time(10)
     move_group.plan()
     move_group.clear_path_constraints()
 
+    print("============ Press enter to continue with the pose constrained planning problem.")
+    input()
+    tutorial.remove_all_markers()
+    tutorial.remove_obstacle()
+
+    pcm = tutorial.create_vertical_plane_constraints()
+    ocm = tutorial.create_orientation_constraints()
+
+    path_constraints = moveit_msgs.msg.Constraints()
+    path_constraints.orientation_constraints.append(ocm)
+    path_constraints.position_constraints.append(pcm)
+    pose_goal = tutorial.create_pose_goal_under_obstacle()
+    # pcm = tutorial.create_vertical_plane_constraints()
+
+    move_group.set_start_state(start_state)
+    move_group.set_pose_target(pose_goal)
+    move_group.set_path_constraints(path_constraints)
+    move_group.set_planning_time(1)
+    move_group.plan()
+    move_group.clear_path_constraints()
+
+    print("============ Press enter to continue with the pose constrained planning problem with obstacle.")
+    input()
+    tutorial.remove_all_markers()
+    tutorial.add_obstacle()
+
+    pcm = tutorial.create_vertical_plane_constraints()
+    ocm = tutorial.create_orientation_constraints()
+
+    path_constraints = moveit_msgs.msg.Constraints()
+    path_constraints.orientation_constraints.append(ocm)
+    path_constraints.position_constraints.append(pcm)
+    pose_goal = tutorial.create_pose_goal_under_obstacle()
+    # pcm = tutorial.create_vertical_plane_constraints()
+
+    move_group.set_start_state(start_state)
+    move_group.set_pose_target(pose_goal)
+    move_group.set_path_constraints(path_constraints)
+    move_group.set_planning_time(60)
+    move_group.plan()
+    move_group.clear_path_constraints()
 
     print("Press enter to exit!")
     input()
