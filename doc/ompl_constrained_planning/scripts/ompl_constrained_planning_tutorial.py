@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Software License Agreement (BSD License)
 #
@@ -144,6 +144,37 @@ class ConstrainedPlanningTutorial(object):
         self.display_sphere(pose.pose)
 
         return pose
+
+    ## END_SUB_TUTORIAL
+
+    ## BEGIN_SUB_TUTORIAL ori_con
+    ## First we create simple orientation constraints on the current end-effector link (:code:`self.ee_link = "panda_link8"`).
+    def create_orientation_constraints(self):
+        ocm = moveit_msgs.msg.OrientationConstraint()
+        ocm.header.frame_id = self.ref_link
+        ocm.link_name = self.ee_link
+
+        current_pose = self.move_group.get_current_pose()
+        ocm.orientation = current_pose.pose.orientation
+
+        print("Quaternion desired: ", ocm.orientation)
+
+        # quat = quaternion_from_euler(pi / 4, 0, 0)
+        # ocm.orientation = quat
+        # ocm.orientation = Quaternion(0.5, 0.5, 0.5, 0.5)
+        # Allow rotation of 45 degrees around the x and y axis
+        ocm.absolute_x_axis_tolerance = 1  # rotation "to the front"
+        ocm.absolute_y_axis_tolerance = 1  # rotation "to the side"
+        ocm.absolute_z_axis_tolerance = pi  # rotation around vertical axis
+
+        # ocm.parameterization = moveit_msgs.msg.OrientationConstraint.XYZ_EULER_ANGLES
+        ocm.parameterization = moveit_msgs.msg.OrientationConstraint.ROTATION_VECTOR
+        # XYZ_EULER_ANGLES = 0
+        # ROTATION_VECTOR = 1
+        # The tilt constraint is the only constraint
+        ocm.weight = 1
+
+        return ocm
 
     ## END_SUB_TUTORIAL
 
@@ -567,6 +598,94 @@ def run_tutorial():
     # move_group.plan()
     # move_group.clear_path_constraints()
 
+    # Now wait for the user (you) to press enter before doing trying the position constraints.
+    print(
+        "============ Press enter to continue with the orientation constrained planning problem."
+    )
+    input()
+    tutorial.remove_all_markers()
+    tutorial.remove_obstacle()
+
+    pose_goal = tutorial.create_pose_goal()
+
+    ocm = tutorial.create_orientation_constraints()
+
+    path_constraints = moveit_msgs.msg.Constraints()
+    path_constraints.orientation_constraints.append(ocm)
+    pose_goal = tutorial.create_pose_goal_under_obstacle()
+    # pcm = tutorial.create_vertical_plane_constraints()
+
+    move_group.set_start_state(start_state)
+    move_group.set_pose_target(pose_goal)
+    move_group.set_path_constraints(path_constraints)
+    move_group.set_planning_time(1)
+    move_group.plan()
+    move_group.clear_path_constraints()
+
+    print(
+        "============ Press enter to continue with the orientation constrained planning problem with obstacle."
+    )
+    input()
+
+    tutorial.remove_all_markers()
+    tutorial.add_obstacle()
+
+    pose_goal = tutorial.create_pose_goal_under_obstacle()
+    ocm = tutorial.create_orientation_constraints()
+
+    # We need two wrap the constraints in a generic `Constraints` message.
+    path_constraints = moveit_msgs.msg.Constraints()
+    path_constraints.orientation_constraints.append(ocm)
+
+    move_group.set_start_state(start_state)
+    move_group.set_pose_target(pose_goal)
+    move_group.set_path_constraints(path_constraints)
+    move_group.set_planning_time(10)
+    move_group.plan()
+    move_group.clear_path_constraints()
+
+    # print("============ Press enter to continue with the pose constrained planning problem.")
+    # input()
+    # tutorial.remove_all_markers()
+    # tutorial.remove_obstacle()
+
+    # pcm = tutorial.create_vertical_plane_constraints()
+    # ocm = tutorial.create_orientation_constraints()
+
+    # path_constraints = moveit_msgs.msg.Constraints()
+    # path_constraints.orientation_constraints.append(ocm)
+    # path_constraints.position_constraints.append(pcm)
+    # pose_goal = tutorial.create_pose_goal_under_obstacle()
+    # # pcm = tutorial.create_vertical_plane_constraints()
+
+    # move_group.set_start_state(start_state)
+    # move_group.set_pose_target(pose_goal)
+    # move_group.set_path_constraints(path_constraints)
+    # move_group.set_planning_time(1)
+    # move_group.plan()
+    # move_group.clear_path_constraints()
+
+    # print("============ Press enter to continue with the pose constrained planning problem with obstacle.")
+    # input()
+    # tutorial.remove_all_markers()
+    # tutorial.add_obstacle()
+
+    # pcm = tutorial.create_vertical_plane_constraints()
+    # ocm = tutorial.create_orientation_constraints()
+
+    # path_constraints = moveit_msgs.msg.Constraints()
+    # path_constraints.orientation_constraints.append(ocm)
+    # path_constraints.position_constraints.append(pcm)
+    # pose_goal = tutorial.create_pose_goal_under_obstacle()
+    # # pcm = tutorial.create_vertical_plane_constraints()
+
+    # move_group.set_start_state(start_state)
+    # move_group.set_pose_target(pose_goal)
+    # move_group.set_path_constraints(path_constraints)
+    # move_group.set_planning_time(60)
+    # move_group.plan()
+    # move_group.clear_path_constraints()
+
     print("Done!")
     ## END_SUB_TUTORIAL
 
@@ -596,6 +715,10 @@ if __name__ == "__main__":
 ## Create position constraints
 ## ***************************
 ## CALL_SUB_TUTORIAL pos_con
+##
+## Create orientation constraints
+## ***************************
+## CALL_SUB_TUTORIAL ori_con
 ##
 ## Finally, solve a planning problem!
 ## **********************************
