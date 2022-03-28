@@ -12,7 +12,7 @@ Some of the strengths of STOMP include:
 - Handles cost functions which do not need to be differentiable.
 - Uses distance field and spherical approximations to quickly compute distance queries and collision costs.
 
-Integration into Kinetic and Melodic version of MoveIt is work in progress. `More info <https://www.sachinchitta.org/uploads/2/2/5/7/22571428/kalakrishnan_icra_2011.pdf>`_
+Integration into Kinetic and Melodic version of MoveIt is work in progress. `More info <http://www-clmc.usc.edu/publications/K/kalakrishnan-ICRA2011.pdf>`_
 
 Getting Started
 ---------------
@@ -22,19 +22,20 @@ You should also have gone through the steps in `Visualization with MoveIt RViz P
 
 Prerequisites
 -------------
- 1. You must have the latest version of MoveIt for your ROS distribution installed. As STOMP is distributed independently you can safely install the packaged version of MoveIt however. STOMP then needs to be build from source, we will go through the steps for doing this below.
- 2. To use STOMP with your robot you must need to have a MoveIt configuration package for your robot ready. For example, if you have a Panda robot, it's probably called ``panda_moveit_config``. This is typically built using the `MoveIt Setup Assistant <../setup_assistant/setup_assistant_tutorial.html>`_.
- 3. You must also have built `ros-industrial/stomp_ros package <https://github.com/ros-industrial/stomp_ros>`_ from source. This needs to be built from source since stomp_ros is not released as a debian yet.
+ 1. You must have the latest version of MoveIt for your ROS distribution installed. As STOMP is distributed independently you can safely install the packaged version of MoveIt. However, STOMP needs to be built from source. We will go through the steps for doing this below.
+ 2. To use STOMP with your robot you must have a MoveIt configuration package for your robot ready. For example, if you have a Panda robot, it's probably called ``panda_moveit_config``. This is typically built using the `MoveIt Setup Assistant <../setup_assistant/setup_assistant_tutorial.html>`_.
+ 3. You must also have built `ros-industrial/stomp_ros package <https://github.com/ros-industrial/stomp_ros>`_ and  `ros-industrial/stomp package <https://github.com/ros-industrial/stomp>`_ from source. This needs to be built from source since stomp_ros is not released as a debian yet.
 
 Installing STOMP from Source
 ------------------------------
-As you add and remove packages from your workspace you will need to clean your workspace and re-run the command to install new missing dependencies. Clean your workspace to remove references to the system wide installation of MoveIt: ::
+As you add and remove packages from your workspace you will need to clean your workspace with ``catkin clean`` and re-run the command to install new missing dependencies. Clean your workspace to remove references to the system wide installation of MoveIt: ::
 
-  cd ~/ws_moveit/src
-  source /opt/ros/melodic/setup.bash
-  wstool init
-  wstool set stomp https://github.com/ros-industrial/stomp_ros.git --git
-  wstool update
+  cd ~/ws_moveit
+  source /opt/ros/noetic/setup.bash
+  wstool set -t src stomp_ros https://github.com/ros-industrial/stomp_ros.git --git
+  wstool update -t src stomp_ros
+  wstool merge -t src src/stomp_ros/dependencies.rosinstall
+  wstool update -t src stomp ros_industrial_cmake_boilerplate
   catkin build
 
 Re-source the setup files: ::
@@ -91,7 +92,7 @@ If you have the ``panda_moveit_config`` from the `ros-planning/panda_moveit_conf
 
 Running STOMP with Obstacles in the Scene
 +++++++++++++++++++++++++++++++++++++++++
-To run STOMP in an evironment with obstacles, you can run the sample python script:
+To run STOMP in an environment with obstacles, you can run the sample python script:
 
   :codedir:`collision_scene_example.py<collision_environments/scripts/collision_scene_example.py>`.
 
@@ -109,7 +110,7 @@ or: ::
 
   rosrun moveit_tutorials collision_scene_example.py sparse
 
-Next, in RViz, select STOMP in the MotionPlanning pannel under the Context tab. Set the desired start and goal states by moving the end-effector around with the imarker and then click on the Plan button under the Planning tab in the MotionPlanning pannel to start planning. The planner will now attempt to find a feasible solution between the given start and end position. STOMP performs better than CHOMP in avoiding obstacles. This is due to STOMP's stochastic nature which produces non-jerky trajectories as opposed to CHOMP which often produces jerky paths to avoid obstacles.
+Next, in RViz, select STOMP in the MotionPlanning panel under the Context tab. Set the desired start and goal states by moving the end-effector around with the imarker and then click on the Plan button under the Planning tab in the MotionPlanning panel to start planning. The planner will now attempt to find a feasible solution between the given start and end position. STOMP performs better than CHOMP in avoiding obstacles. This is due to STOMP's stochastic nature which produces non-jerky trajectories as opposed to CHOMP which often produces jerky paths to avoid obstacles.
 
 Tweaking some of the parameters for STOMP
 -----------------------------------------
@@ -144,7 +145,7 @@ STOMP has some parameters associated with it. These can be modified for the give
   This can be set to "NormalDistributionSampling" (default) or "GoalGuidedMultivariateGaussian". Depending on what class is used specific parameters need to be set. Have a look at `this link <https://github.com/ros-industrial/industrial_moveit/blob/kinetic-devel/stomp_plugins/example_pages.dox>`_ for setting parameters if using the "GoalGuidedMultivariateGaussian".
 
 - **stddev**: ::
-  This is the degree of noise that can be applied to the joints. Each value in this array is the amplitude of the noise applied to the joint at that position in the array. For instace, the leftmost value in the array will be the value used to set the noise of the first joint of the robot (panda_joint1 in our case). The dimensionality of this array should be equal to the number of joints in the planning group name. Larger "stddev" values correspond to larger motions of the joints.
+  This is the degree of noise that can be applied to the joints. Each value in this array is the amplitude of the noise applied to the joint at that position in the array. For instance, the leftmost value in the array will be the value used to set the noise of the first joint of the robot (panda_joint1 in our case). The dimensionality of this array should be equal to the number of joints in the planning group name. Larger "stddev" values correspond to larger motions of the joints.
 
 **Cost Function Parameters**:
 
@@ -166,7 +167,7 @@ STOMP has some parameters associated with it. These can be modified for the give
 **Update Filter parameters**:
 
 - **class**: ::
-  This can be set to "PolynomialSmoother" or "ConstrainedCartesianGoal". Specific paramters need to be set depending on the chosen class. For setting parameters for "ConstrainedCartesianGoal", have a look at `this link <https://github.com/ros-industrial/industrial_moveit/blob/kinetic-devel/stomp_plugins/example_pages.dox>`_.
+  This can be set to "PolynomialSmoother" or "ConstrainedCartesianGoal". Specific parameters need to be set depending on the chosen class. For setting parameters for "ConstrainedCartesianGoal", have a look at `this link <https://github.com/ros-industrial/industrial_moveit/blob/kinetic-devel/stomp_plugins/example_pages.dox>`_.
 
 - **poly_order**: ::
   This is the order of the polynomial function used for smoothing trajectories.
